@@ -73,7 +73,9 @@ def write_npy(moving_name: str,
         'static_angular_velocity': static_angular_velocity,
         'contact_points': contact_points,
         'contact_times': contact_times
-    })
+    },
+        allow_pickle=True)
+
 
 def main():
     moving_urdf, static_urdf, moving_name, static_name = random_urdfs()
@@ -81,6 +83,7 @@ def main():
     print(static_urdf)
     print(moving_name)
     print(static_name)
+
 
 if __name__ == '__main__':
     main()

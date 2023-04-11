@@ -9,10 +9,11 @@ import sys
 from utils.trajectory_generation import *
 from utils.file_operations import *
 from utils.trajectory_generation import *
+from tqdm import tqdm
 
 def run_single_simulation():
     # Set up the simulation
-    physicsClient = p.connect(p.GUI) 
+    physicsClient = p.connect(p.DIRECT) # or p.DIRECT for non-graphical version /p.GUI
     p.setTimeStep(1/24000)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
@@ -122,7 +123,7 @@ def run_single_simulation():
         static_orientation=np.array(static_ori),
         static_velocity=np.array(static_vel),
         static_angular_velocity=np.array(static_angvel),
-        contact_points=np.array(contact_points),
+        contact_points=contact_points,
         contact_times=np.array(contact_times)
     )
 
@@ -131,7 +132,7 @@ def run_single_simulation():
 
 
 def main():
-    for i in range(100):
+    for i in tqdm(range(100)):
         run_single_simulation()
 
 if __name__ == "__main__":
