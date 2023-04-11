@@ -1,13 +1,20 @@
 # 498 Project
 
 ## Collecting collision data
+### **Moving-fixed, static-free**
 For collecting collision data from pybullet, use the script `pybullet_experiments/urdf_collision.py`
-Running this will start generating `npy` files in `log/`.
+Running this will start generating `npz` files in `log/data`.
 
-### File naming:
-`{moving_object_name}_{static_object_name}_{number}.npy`
+This script will generate data such that the moving object follows a fixed trajectory. No force is applied to this object, meaning that upon collision, the moving object will continue it's pre-set traajectory, while the static object will experience some applied force/impulse and accordingly displace itself.
 
-### File content
+This will follow some assumption that:
+- The "moving object" is the robot arm, which does not experience a force applied by the "static object"
+- The static object is a "free" object.
+
+#### **File naming:**
+`{moving_object_name}_{static_object_name}_{number}.npz`
+
+#### **File content**
 ```
 np.save(filename, {
         'simulation_time': simulation_time,
@@ -23,3 +30,18 @@ np.save(filename, {
         'contact_times': contact_times
     })
 ``` 
+### **Moving-free, static-free**
+
+#### **Running the script**
+Run `python3 linear_collision.py`
+
+For this script, two objetcts are placed at an arbitrary, random two positions, and a force is applied to one in the direction of the other at a random magnitude. 
+Both objects are "free" in the sense that if the force of the push isn't strong enough, collision may not occur.
+
+This is a more realistic scenario for two "free" objects.
+
+
+**FOR BOTH SCRIPTS, GRAVITY IS TURNED OFF**
+
+**TODO:**
+- Maybe on a tabletop? Turn on gravity and apply a force?

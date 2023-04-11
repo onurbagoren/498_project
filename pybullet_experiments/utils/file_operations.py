@@ -43,25 +43,26 @@ def write_npy(moving_name: str,
               static_velocity: np.array,
               static_angular_velocity: np.array,
               contact_points,
-              contact_times: np.array
+              contact_times: np.array,
+              log_dir=LOG_DIR
               ):
     '''
     Write the npy file between two URDFs
     '''
     # Check if LOGDIR exists
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
     # Create the filename
     ii = 0
-    filename = os.path.join(LOG_DIR, f'{moving_name}_{static_name}_{ii}.npy')
-    while os.path.exists(filename):
+    filename = os.path.join(log_dir, f'{moving_name}_{static_name}_{ii}.npz')
+    # Check if file exists
+    while os.path.isfile(filename):
         ii += 1
         filename = os.path.join(
-            LOG_DIR, f'{moving_name}_{static_name}_{ii}.npy')
-
+            log_dir, f'{moving_name}_{static_name}_{ii}.npz')
     # Write the file
-    np.savez(file=filename,
+    np.savez(file=filename[:-4],
             simulation_time=simulation_time,
             moving_position=moving_position,
             moving_orientation=moving_orientation,
