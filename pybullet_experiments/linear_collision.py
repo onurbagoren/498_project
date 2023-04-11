@@ -86,6 +86,7 @@ def run_single_simulation(num_frames):
         moving_vel.append(vel1)
         moving_angvel.append(angvel1)
         static_pos.append(pos2)
+        static_ori.append(ori2)
         static_vel.append(vel2)
         static_angvel.append(angvel2)
         # Check if objects have collided
