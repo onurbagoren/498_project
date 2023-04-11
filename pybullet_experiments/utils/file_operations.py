@@ -13,7 +13,7 @@ def get_urdf_path():
     return urdf_dir
 
 
-def random_urdfs():
+def random_urdfs(fingers=True):
     '''
     Function to get two URDFs. The first one will be used as the one that is "thrown around" and the second one will be the static one
     '''
@@ -25,7 +25,7 @@ def random_urdfs():
     # Get the names of the URDFs, which is the text after the last/ and before the .urdf
     moving_name = urdf_files[0].split('/')[-1].split('.')[0]
     static_name = urdf_files[1].split('/')[-1].split('.')[0]
-    if 'finger' in static_name:
+    if 'finger' in static_name and fingers:
         # Pick a new random URDF
         return random_urdfs()
     return urdf_files[0], urdf_files[1], moving_name, static_name

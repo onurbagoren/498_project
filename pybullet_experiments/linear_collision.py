@@ -13,7 +13,7 @@ def run_single_simulation(num_frames):
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
 
-    moving_urdf, static_urdf, moving_name, static_name = random_urdfs()
+    moving_urdf, static_urdf, moving_name, static_name = random_urdfs(fingers=False)
 
     # Load URDF objects
     planeId = p.loadURDF("plane.urdf")
@@ -75,11 +75,11 @@ def run_single_simulation(num_frames):
         p.getCameraImage(320, 200)
         p.stepSimulation()
         # Get simulation time
-        t += p.getPhysicsEngineParameters()["fixedTimeStep"]
         pos1, ori1 = p.getBasePositionAndOrientation(movingId) # m, quaternion
         pos2, ori2 = p.getBasePositionAndOrientation(staticId)
         vel1, angvel1 = p.getBaseVelocity(movingId) # m/s, rad/s
         vel2, angvel2 = p.getBaseVelocity(staticId)
+        t += p.getPhysicsEngineParameters()["fixedTimeStep"]
         times.append(t) # s
         moving_pos.append(pos1)
         moving_ori.append(ori1)
@@ -124,7 +124,7 @@ def run_single_simulation(num_frames):
     p.disconnect()
 
 def main():
-    for i in tqdm(range(1000)):
+    for i in tqdm(range(int(1e5))):
         run_single_simulation(25)
 
 

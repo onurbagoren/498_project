@@ -21,7 +21,7 @@ def run_single_simulation(num_frames):
     '''
     # Set up the simulation
     # or p.DIRECT for non-graphical version /p.GUI
-    physicsClient = p.connect(p.GUI)
+    physicsClient = p.connect(p.DIRECT)
     p.setTimeStep(1/24000)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
@@ -127,15 +127,15 @@ def run_single_simulation(num_frames):
         write_npy(
             moving_name=moving_name,
             static_name=static_name,
-            simulation_time=np.array(times),
-            moving_position=np.array(moving_pos),
-            moving_orientation=np.array(moving_ori),
-            moving_velocity=np.array(moving_vel),
-            moving_angular_velocity=np.array(moving_angvel),
-            static_position=np.array(static_pos),
-            static_orientation=np.array(static_ori),
-            static_velocity=np.array(static_vel),
-            static_angular_velocity=np.array(static_angvel),
+            simulation_time=np.array(times)[-num_frames*2:],
+            moving_position=np.array(moving_pos)[-num_frames*2:],
+            moving_orientation=np.array(moving_ori)[-num_frames*2:],
+            moving_velocity=np.array(moving_vel)[-num_frames*2:],
+            moving_angular_velocity=np.array(moving_angvel)[-num_frames*2:],
+            static_position=np.array(static_pos)[-num_frames*2:],
+            static_orientation=np.array(static_ori)[-num_frames*2:],
+            static_velocity=np.array(static_vel)[-num_frames*2:],
+            static_angular_velocity=np.array(static_angvel)[-num_frames*2:],
             contact_points=contact_points,
             contact_times=np.array(contact_times)
         )
