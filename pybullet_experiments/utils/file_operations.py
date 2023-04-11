@@ -42,7 +42,7 @@ def write_npy(moving_name: str,
               static_orientation: np.array,
               static_velocity: np.array,
               static_angular_velocity: np.array,
-              contact_points: np.array,
+              contact_points,
               contact_times: np.array
               ):
     '''
@@ -61,20 +61,19 @@ def write_npy(moving_name: str,
             LOG_DIR, f'{moving_name}_{static_name}_{ii}.npy')
 
     # Write the file
-    np.save(filename, {
-        'simulation_time': simulation_time,
-        'moving_position': moving_position,
-        'moving_orientation': moving_orientation,
-        'moving_velocity': moving_velocity,
-        'moving_angular_velocity': moving_angular_velocity,
-        'static_position': static_position,
-        'static_orientation': static_orientation,
-        'static_velocity': static_velocity,
-        'static_angular_velocity': static_angular_velocity,
-        'contact_points': contact_points,
-        'contact_times': contact_times
-    },
-        allow_pickle=True)
+    np.savez(file=filename,
+            simulation_time=simulation_time,
+            moving_position=moving_position,
+            moving_orientation=moving_orientation,
+            moving_velocity=moving_velocity,
+            moving_angular_velocity=moving_angular_velocity,
+            static_position=static_position,
+            static_orientation=static_orientation,
+            static_velocity=static_velocity,
+            static_angular_velocity=static_angular_velocity,
+            contact_points=contact_points,
+            contact_times=contact_times,
+            allow_pickle=True)
 
 
 def main():
