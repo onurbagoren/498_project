@@ -12,8 +12,8 @@ from utils.trajectory_generation import *
 
 def run_single_simulation():
     # Set up the simulation
-    physicsClient = p.connect(p.GUI)
-    p.setTimeStep(1/240000)
+    physicsClient = p.connect(p.GUI) 
+    p.setTimeStep(1/24000)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
     planeId = p.loadURDF("plane.urdf")
@@ -46,7 +46,7 @@ def run_single_simulation():
 
 
     # Define the simulation parameters
-    timeStep = 1.0 / 240000.0
+    timeStep = 1.0 / 24000.0
 
     prevPos = None
     prevTime = None
@@ -105,7 +105,7 @@ def run_single_simulation():
                 curr_pos = ii
                 collision = True
             if curr_pos is not None:
-                if ii == curr_pos + 10000:
+                if ii == curr_pos + 1000:
                     break
         if collision:
             break
@@ -134,4 +134,5 @@ def main():
     for i in range(100):
         run_single_simulation()
 
-        
+if __name__ == "__main__":
+    main()

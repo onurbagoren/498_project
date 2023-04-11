@@ -7,7 +7,7 @@ def interpolate_3d_traj(duration: float,
                         num_points: int,
                         xlim: list = [-0.4, 0.4],
                         ylim: list = [-0.4, 0.4],
-                        zlim: list = [0.5, 0.5]):
+                        zlim: list = [0.4, 0.6]):
     '''
     Generate a trajectory for the object to follow in a 3D space
 
