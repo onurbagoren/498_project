@@ -21,14 +21,14 @@ def run_single_simulation(num_frames):
     '''
     # Set up the simulation
     # or p.DIRECT for non-graphical version /p.GUI
-    physicsClient = p.connect(p.GUI)
+    physicsClient = p.connect(p.DIRECT)
     p.setTimeStep(1/24000)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
     planeId = p.loadURDF("plane.urdf")
     # Set camera position
-    p.resetDebugVisualizerCamera(
-        cameraDistance=3.0, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
+    # p.resetDebugVisualizerCamera(
+        # cameraDistance=3.0, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
     # Get camera data
 
     moving_urdf, static_urdf, moving_name, static_name = random_urdfs()
@@ -141,20 +141,22 @@ def run_single_simulation(num_frames):
         write_npy(
             moving_name=moving_name,
             static_name=static_name,
-            simulation_time=np.array(times),
-            moving_position=np.array(moving_pos),
-            moving_orientation=np.array(moving_ori),
-            moving_velocity=np.array(moving_vel),
-            moving_angular_velocity=np.array(moving_angvel),
-            static_position=np.array(static_pos),
-            static_orientation=np.array(static_ori),
-            static_velocity=np.array(static_vel),
-            static_angular_velocity=np.array(static_angvel),
-            contact_points_moving=np.array(contact_points_moving),
-            contact_points_static=np.array(contact_points_static),
-            contact_normal=np.array(contact_normal),
-            contact_normal_force=np.array(contact_force),
-            contact_times=np.array(contact_times)
+            simulation_time=np.array(times)[-num_frames*2:],
+            moving_position=np.array(moving_pos)[-num_frames*2:],
+            moving_orientation=np.array(moving_ori)[-num_frames*2:],
+            moving_velocity=np.array(moving_vel)[-num_frames*2:],
+            moving_angular_velocity=np.array(moving_angvel)[-num_frames*2:],
+            static_position=np.array(static_pos)[-num_frames*2:],
+            static_orientation=np.array(static_ori)[-num_frames*2:],
+            static_velocity=np.array(static_vel)[-num_frames*2:],
+            static_angular_velocity=np.array(static_angvel)[-num_frames*2:],
+            contact_points_moving=np.array(
+                contact_points_moving)[-num_frames*2:],
+            contact_points_static=np.array(
+                contact_points_static)[-num_frames*2:],
+            contact_normal=np.array(contact_normal)[-num_frames*2:],
+            contact_normal_force=np.array(contact_force)[-num_frames*2:],
+            contact_times=np.array(contact_times)[-num_frames*2:]
         )
 
     # Disconnect from the simulation
@@ -162,7 +164,7 @@ def run_single_simulation(num_frames):
 
 
 def main():
-    for i in tqdm(range(100)):
+    for i in tqdm(range(200)):
         run_single_simulation(10000)
 
 

@@ -11,7 +11,7 @@ from tqdm import tqdm
 def run_single_simulation(num_frames):
 
     # Set up PyBullet physics simulation
-    physicsClient = p.connect(p.GUI)
+    physicsClient = p.connect(p.DIRECT)
     p.setTimeStep(1/200)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
@@ -22,8 +22,8 @@ def run_single_simulation(num_frames):
     # Load URDF objects
     planeId = p.loadURDF("plane.urdf")
 
-    p.resetDebugVisualizerCamera(
-        cameraDistance=3.0, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
+    # p.resetDebugVisualizerCamera(
+    #     cameraDistance=3.0, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
 
     # Random start position and orientation
     startPos_moving = np.array([0, 0, 1])
@@ -41,7 +41,7 @@ def run_single_simulation(num_frames):
                           startOrientation_static)
 
     # Set up constant velocity and force magnitude
-    velocity = np.random.randn() * 100 + 750
+    velocity = np.random.randn() * 10 + 200
 
     # Get mass of object1
     object1Mass = p.getDynamicsInfo(movingId, -1)[0]
@@ -149,7 +149,7 @@ def run_single_simulation(num_frames):
 
 
 def main():
-    for i in tqdm(range(int(5))):
+    for i in tqdm(range(int(2e4))):
         run_single_simulation(25)
 
 
