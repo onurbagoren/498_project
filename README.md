@@ -30,6 +30,25 @@ np.save(filename, {
         'contact_times': contact_times
     })
 ``` 
+
+Contact points is structured as:
+```
+0: contactFlag
+1: body1 ID
+2: body2 ID
+3: link1 index
+4: link2 index
+5: 3-tuple of the position of contact on the frame of body1
+6: 3-tuple of the position of contact on the frame of body2
+7: The normal direction of the contact, relative to the local coordinate system of the second object, as a tuple of three floats.
+8: ??
+9: normalForce
+10: lateralFriction for body1
+11: 3-tuple lateralFriction direction for body1
+12: lateralFriction on body2
+13: 3-tuple lateralFriction direction for body2
+```
+
 ### **Moving-free, static-free**
 
 #### **Running the script**

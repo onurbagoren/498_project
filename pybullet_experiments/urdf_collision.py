@@ -21,7 +21,7 @@ def run_single_simulation(num_frames):
     '''
     # Set up the simulation
     # or p.DIRECT for non-graphical version /p.GUI
-    physicsClient = p.connect(p.DIRECT)
+    physicsClient = p.connect(p.GUI)
     p.setTimeStep(1/24000)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
