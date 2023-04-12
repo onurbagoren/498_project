@@ -16,22 +16,25 @@ This will follow some assumption that:
 
 #### **File content**
 ```
-np.save(filename, {
-        'simulation_time': simulation_time,
-        'moving_position': moving_position,
-        'moving_orientation': moving_orientation,
-        'moving_velocity': moving_velocity,
-        'moving_angular_velocity': moving_angular_velocity,
-        'static_position': static_position,
-        'static_orientation': static_orientation,
-        'static_velocity': static_velocity,
-        'static_angular_velocity': static_angular_velocity,
-        'contact_points': contact_points,
-        'contact_times': contact_times
-    })
+np.savez(file=filename,
+             simulation_time=simulation_time,
+             moving_position=moving_position,
+             moving_orientation=moving_orientation,
+             moving_velocity=moving_velocity,
+             moving_angular_velocity=moving_angular_velocity,
+             static_position=static_position,
+             static_orientation=static_orientation,
+             static_velocity=static_velocity,
+             static_angular_velocity=static_angular_velocity,
+             contact_points_moving=contact_points_moving,
+             contact_points_static=contact_points_static,
+             contact_normal=contact_normal,
+             contact_normal_force=contact_normal_force,
+             contact_times=contact_times
+             )
 ``` 
 
-Contact points is structured as:
+Contact points is structured as a tuple of tuples. Each one of the "sub"-tuples has:
 ```
 0: contactFlag
 1: body1 ID
@@ -40,14 +43,17 @@ Contact points is structured as:
 4: link2 index
 5: 3-tuple of the position of contact on the frame of body1
 6: 3-tuple of the position of contact on the frame of body2
-7: The normal direction of the contact, relative to the local coordinate system of the second object, as a tuple of three floats.
+7: The normal direction of the contact, relative to the local coordinate system of the second object, as a tuple of three floats. (Need to double check this)
 8: ??
-9: normalForce
+9: normalForce (N?)
 10: lateralFriction for body1
 11: 3-tuple lateralFriction direction for body1
 12: lateralFriction on body2
 13: 3-tuple lateralFriction direction for body2
 ```
+Number of "sub"-tuples is dictated by the number of contact points at the time.
+
+An example of the normals can be found in ![](figures/normals.png)
 
 ### **Moving-free, static-free**
 

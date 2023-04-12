@@ -42,7 +42,10 @@ def write_npy(moving_name: str,
               static_orientation: np.array,
               static_velocity: np.array,
               static_angular_velocity: np.array,
-              contact_points,
+              contact_points_moving: np.array,
+              contact_points_static: np.array,
+              contact_normal: np.array,
+              contact_normal_force: np.array,
               contact_times: np.array,
               log_dir=LOG_DIR
               ):
@@ -63,26 +66,25 @@ def write_npy(moving_name: str,
             log_dir, f'{moving_name}_{static_name}_{ii}.npz')
     # Write the file
     np.savez(file=filename[:-4],
-            simulation_time=simulation_time,
-            moving_position=moving_position,
-            moving_orientation=moving_orientation,
-            moving_velocity=moving_velocity,
-            moving_angular_velocity=moving_angular_velocity,
-            static_position=static_position,
-            static_orientation=static_orientation,
-            static_velocity=static_velocity,
-            static_angular_velocity=static_angular_velocity,
-            contact_points=contact_points,
-            contact_times=contact_times,
-            allow_pickle=True)
+             simulation_time=simulation_time,
+             moving_position=moving_position,
+             moving_orientation=moving_orientation,
+             moving_velocity=moving_velocity,
+             moving_angular_velocity=moving_angular_velocity,
+             static_position=static_position,
+             static_orientation=static_orientation,
+             static_velocity=static_velocity,
+             static_angular_velocity=static_angular_velocity,
+             contact_points_moving=contact_points_moving,
+             contact_points_static=contact_points_static,
+             contact_normal=contact_normal,
+             contact_normal_force=contact_normal_force,
+             contact_times=contact_times,
+             allow_pickle=True)
 
 
 def main():
     moving_urdf, static_urdf, moving_name, static_name = random_urdfs()
-    print(moving_urdf)
-    print(static_urdf)
-    print(moving_name)
-    print(static_name)
 
 
 if __name__ == '__main__':

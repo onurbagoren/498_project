@@ -68,7 +68,10 @@ def run_single_simulation(num_frames):
     static_angvel = []
     collision = False
     curr_pos = None
-    contact_points = []
+    contact_points_moving = []
+    contact_points_static = []
+    contact_normal = []
+    contact_force = []
     contact_times = []
     prev_pos = np.array([0, 0, 1])
     prev_ori = np.array(startOrientation_moving)
@@ -114,8 +117,19 @@ def run_single_simulation(num_frames):
             static_vel.append(staticLinVel)
             static_angvel.append(staticAngVel)
             if len(contacts) > 0:
-                contact_points.append(contacts)
-                contact_times.append(curr_time)
+                if len(contacts) > 1:
+                    for ii, contact_pts in enumerate(contacts):
+                        contact_times.append(curr_time)
+                        contact_points_moving.append(contacts[ii][5])
+                        contact_points_static.append(contacts[ii][6])
+                        contact_normal.append(contacts[ii][7])
+                        contact_force.append(contacts[ii][9])
+                else:
+                    contact_times.append(curr_time)
+                    contact_points_moving.append(contacts[0][5])
+                    contact_points_static.append(contacts[0][6])
+                    contact_normal.append(contacts[0][7])
+                    contact_force.append(contacts[0][9])
                 curr_pos = ii
                 collision = True
             if curr_pos is not None:
@@ -127,16 +141,19 @@ def run_single_simulation(num_frames):
         write_npy(
             moving_name=moving_name,
             static_name=static_name,
-            simulation_time=np.array(times)[-num_frames*2:],
-            moving_position=np.array(moving_pos)[-num_frames*2:],
-            moving_orientation=np.array(moving_ori)[-num_frames*2:],
-            moving_velocity=np.array(moving_vel)[-num_frames*2:],
-            moving_angular_velocity=np.array(moving_angvel)[-num_frames*2:],
-            static_position=np.array(static_pos)[-num_frames*2:],
-            static_orientation=np.array(static_ori)[-num_frames*2:],
-            static_velocity=np.array(static_vel)[-num_frames*2:],
-            static_angular_velocity=np.array(static_angvel)[-num_frames*2:],
-            contact_points=contact_points,
+            simulation_time=np.array(times),
+            moving_position=np.array(moving_pos),
+            moving_orientation=np.array(moving_ori),
+            moving_velocity=np.array(moving_vel),
+            moving_angular_velocity=np.array(moving_angvel),
+            static_position=np.array(static_pos),
+            static_orientation=np.array(static_ori),
+            static_velocity=np.array(static_vel),
+            static_angular_velocity=np.array(static_angvel),
+            contact_points_moving=np.array(contact_points_moving),
+            contact_points_static=np.array(contact_points_static),
+            contact_normal=np.array(contact_normal),
+            contact_normal_force=np.array(contact_force),
             contact_times=np.array(contact_times)
         )
 

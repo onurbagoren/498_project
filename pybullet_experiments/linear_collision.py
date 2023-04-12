@@ -12,15 +12,18 @@ def run_single_simulation(num_frames):
 
     # Set up PyBullet physics simulation
     physicsClient = p.connect(p.GUI)
+    p.setTimeStep(1/200)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
     p.setGravity(0, 0, 0)
-    p.setTimeStep(1/200)
 
     moving_urdf, static_urdf, moving_name, static_name = random_urdfs(
         fingers=False)
 
     # Load URDF objects
     planeId = p.loadURDF("plane.urdf")
+
+    p.resetDebugVisualizerCamera(
+        cameraDistance=3.0, cameraYaw=0, cameraPitch=-45, cameraTargetPosition=[0, 0, 0])
 
     # Random start position and orientation
     startPos_moving = np.array([0, 0, 1])
@@ -73,8 +76,10 @@ def run_single_simulation(num_frames):
     static_ori = []
     static_vel = []
     static_angvel = []
-    contact_times = []
-    contacts_list = []
+    contact_points_moving = []
+    contact_points_static = []
+    contact_normal = []
+    contact_force = []
     contact_times = []
     t = 0
     while True:
@@ -98,9 +103,19 @@ def run_single_simulation(num_frames):
         contacts = p.getContactPoints(movingId, staticId)
         if len(contacts) > 0:
             collided = True
-            contact_times.append(t)
-            contacts_list.append(contacts)
-            
+            if len(contacts) > 1:
+                for ii, contact_pts in enumerate(contacts):
+                    contact_times.append(t)
+                    contact_points_moving.append(contacts[ii][5])
+                    contact_points_static.append(contacts[ii][6])
+                    contact_normal.append(contacts[ii][7])
+                    contact_force.append(contacts[ii][9])
+            else:
+                contact_times.append(t)
+                contact_points_moving.append(contacts[0][5])
+                contact_points_static.append(contacts[0][6])
+                contact_normal.append(contacts[0][7])
+                contact_force.append(contacts[0][9])
         if collided:
             ii += 1
             if ii == num_frames:
@@ -123,7 +138,10 @@ def run_single_simulation(num_frames):
         static_orientation=np.array(static_ori),
         static_velocity=np.array(static_vel),
         static_angular_velocity=np.array(static_angvel),
-        contact_points=contacts_list,
+        contact_points_moving=contact_points_moving,
+        contact_points_static=contact_points_static,
+        contact_normal=contact_normal,
+        contact_normal_force=contact_force,
         contact_times=np.array(contact_times),
         log_dir=LOG_DIR
     )
@@ -131,7 +149,7 @@ def run_single_simulation(num_frames):
 
 
 def main():
-    for i in tqdm(range(int(1))):
+    for i in tqdm(range(int(5))):
         run_single_simulation(25)
 
 
