@@ -1,0 +1,3 @@
+[submodule "pybullet-URDF-models"]
+	path = pybullet-URDF-models
+	url = git@github.com:ChenEating716/pybullet-URDF-models.git
