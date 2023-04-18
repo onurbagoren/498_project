@@ -16,7 +16,7 @@ This will follow some assumption that:
 
 #### **File content**
 ```
-np.savez(file=filename,
+np.savez(file=filename[:-4],
              simulation_time=simulation_time,
              moving_position=moving_position,
              moving_orientation=moving_orientation,
@@ -35,6 +35,12 @@ np.savez(file=filename,
              lateral_friction_force2=lateral_friction_force2,
              lateral_friction_dir1=lateral_friction_dir1,
              lateral_friction_dir2=lateral_friction_dir2,
+             moving_mass=moving_mass,
+             moving_inertia=moving_inertia,
+             moving_friction=moving_friction,
+             static_mass=static_mass,
+             static_inertia=static_inertia,
+             static_friction=static_friction,
              allow_pickle=True)
 ``` 
 
