@@ -30,8 +30,12 @@ np.savez(file=filename,
              contact_points_static=contact_points_static,
              contact_normal=contact_normal,
              contact_normal_force=contact_normal_force,
-             contact_times=contact_times
-             )
+             contact_times=contact_times,
+             lateral_friction_force1=lateral_friction_force1,
+             lateral_friction_force2=lateral_friction_force2,
+             lateral_friction_dir1=lateral_friction_dir1,
+             lateral_friction_dir2=lateral_friction_dir2,
+             allow_pickle=True)
 ``` 
 
 Contact points is structured as a tuple of tuples. Each one of the "sub"-tuples has:
