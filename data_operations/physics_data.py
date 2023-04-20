@@ -59,30 +59,31 @@ class PhysicsDataset(Dataset):
         static_friction = torch.from_numpy(data['static_friction']).float()
 
         # Combine data into a dictionary
-        sample = {'simulation_time': simulation_time,
-                  'moving_position': moving_position,
-                  'moving_orientation': moving_orientation,
-                  'moving_velocity': moving_velocity,
-                  'moving_angular_velocity': moving_angular_velocity,
-                  'static_position': static_position,
-                  'static_orientation': static_orientation,
-                  'static_velocity': static_velocity,
-                  'static_angular_velocity': static_angular_velocity,
-                  'contact_points_moving': contact_points_moving,
-                  'contact_points_static': contact_points_static,
-                  'contact_normal': contact_normal,
-                  'contact_normal_force': contact_normal_force,
-                  'contact_times': contact_times,
-                  'lateral_friction_force': lateral_friction_force1,
-                  'lateral_friction_force2': lateral_friction_force2,
-                  'lateral_friction_dir': lateral_friction_dir1,
-                  'lateral_friction_dir2': lateral_friction_dir2,
-                  'moving_mass': moving_mass,
-                  'moving_inertia': moving_inertia,
-                  'moving_friction': moving_friction,
-                  'static_mass': static_mass,
-                  'static_inertia': static_inertia,
-                  'static_friction': static_friction}
+        sample = {'simulation_time': simulation_time, # (1, N)
+                  'moving_position': moving_position, # (1, N, 3)
+                  'moving_orientation': moving_orientation, # (1, N, 4) QUATERNION
+                  'moving_velocity': moving_velocity, # (1, N, 3)
+                  'moving_angular_velocity': moving_angular_velocity, # (1, N, 3)
+                  'static_position': static_position, # (1, N, 3)
+                  'static_orientation': static_orientation, # (1, N, 4) QUATERNION
+                  'static_velocity': static_velocity, # (1, N, 3)
+                  'static_angular_velocity': static_angular_velocity, # (1, N, 3)
+                  'contact_points_moving': contact_points_moving, # (1, M, 3) NOTICE DIFFERENT SIZE
+                  'contact_points_static': contact_points_static, # (1, M, 3) NOTICE DIFFERENT SIZE
+                  'contact_normal': contact_normal, # (1, M, 3) NOTICE DIFFERENT SIZE
+                  'contact_normal_force': contact_normal_force, # (1, M) NOTICE DIFFERENT SIZE
+                  'contact_times': contact_times, # (1, M) NOTICE DIFFERENT SIZE
+                  'lateral_friction_force': lateral_friction_force1, # (1, M) NOTICE DIFFERENT SIZE
+                  'lateral_friction_force2': lateral_friction_force2, # (1, M) NOTICE DIFFERENT SIZE
+                  'lateral_friction_dir': lateral_friction_dir1, # (1, M, 3) NOTICE DIFFERENT SIZE
+                  'lateral_friction_dir2': lateral_friction_dir2, # (1, M, 3) NOTICE DIFFERENT SIZE
+                  'moving_mass': moving_mass, # (1)
+                  'moving_inertia': moving_inertia, # (1, 3)
+                  'moving_friction': moving_friction, # (1, 3)
+                  'static_mass': static_mass, # (1)
+                  'static_inertia': static_inertia, # (1, 3)
+                  'static_friction': static_friction # (1, 3)
+                  }
 
         return sample
 
@@ -101,7 +102,7 @@ def main():
     test_loader = DataLoader(test_data, batch_size=1, shuffle=True)
     for i_batch, sample_batched in enumerate(train_loader):
         print(i_batch)
-        print('\t Simulation time:', sample_batched['simulation_time'].shape)
+        print('\t Simulation time:', sample_batched['moving_inertia'].shape)
         print('\t Moving position:', sample_batched['moving_position'].shape)
         print('\t Moving orientation', sample_batched['moving_orientation'].shape)
         print('\t Contact points moving:', sample_batched['contact_points_moving'].shape)
