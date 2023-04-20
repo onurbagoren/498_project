@@ -147,35 +147,38 @@ def run_single_simulation(num_frames):
         if collided:
             ii += 1
             if ii == num_frames:
-                break
+                if len(moving_angvel) >= 50:
+                    break
+                else:
+                    return
         # time.sleep(1./200.)
         if t > 5.0:
             return
 
     # Disconnect from PyBullet physics simulation
-    LOG_DIR = os.path.join('/media/frog/DATA/Datasets/498_project', 'logs', 'linear_collision_ycb_extra_massinfo')
+    LOG_DIR = os.path.join('/media/frog/DATA/Datasets/498_project', 'logs', 'linear_collision_ycb_extra_massinfo_corrected')
     # Save data
     write_npy(
         moving_name=moving_name,
         static_name=static_name,
-        simulation_time=np.array(times),
-        moving_position=np.array(moving_pos),
-        moving_orientation=np.array(moving_ori),
-        moving_velocity=np.array(moving_vel),
-        moving_angular_velocity=np.array(moving_angvel),
-        static_position=np.array(static_pos),
-        static_orientation=np.array(static_ori),
-        static_velocity=np.array(static_vel),
-        static_angular_velocity=np.array(static_angvel),
-        contact_points_moving=contact_points_moving,
-        contact_points_static=contact_points_static,
-        contact_normal=contact_normal,
-        contact_normal_force=contact_force,
-        contact_times=np.array(contact_times),
-        lateral_friction_force1=np.array(lateral_friction_force1),
-        lateral_friction_force2=np.array(lateral_friction_force2),
-        lateral_friction_dir1=np.array(lateral_friction_dir1),
-        lateral_friction_dir2=np.array(lateral_friction_dir2),
+        simulation_time=np.array(times)[-2*num_frames:],
+        moving_position=np.array(moving_pos)[-2*num_frames:],
+        moving_orientation=np.array(moving_ori)[-2*num_frames:],
+        moving_velocity=np.array(moving_vel)[-2*num_frames:],
+        moving_angular_velocity=np.array(moving_angvel)[-2*num_frames:],
+        static_position=np.array(static_pos)[-2*num_frames:],
+        static_orientation=np.array(static_ori)[-2*num_frames:],
+        static_velocity=np.array(static_vel)[-2*num_frames:],
+        static_angular_velocity=np.array(static_angvel)[-2*num_frames:],
+        contact_points_moving=contact_points_moving[-2*num_frames:],
+        contact_points_static=contact_points_static[-2*num_frames:],
+        contact_normal=contact_normal[-2*num_frames:],
+        contact_normal_force=contact_force[-2*num_frames:],
+        contact_times=np.array(contact_times)[-2*num_frames:],
+        lateral_friction_force1=np.array(lateral_friction_force1)[-2*num_frames:],
+        lateral_friction_force2=np.array(lateral_friction_force2)[-2*num_frames:],
+        lateral_friction_dir1=np.array(lateral_friction_dir1)[-2*num_frames:],
+        lateral_friction_dir2=np.array(lateral_friction_dir2)[-2*num_frames:],
         moving_mass=mass,
         moving_inertia=np.array(inertia),
         moving_friction=friction,
