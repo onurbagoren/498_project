@@ -21,6 +21,16 @@ def random_urdfs(fingers=True):
     urdf_files = os.listdir(urdf_dir)
     urdf_files = [os.path.join(urdf_dir, f)
                   for f in urdf_files if f.endswith('.urdf')]
+    urdf_files = []
+    for path, dirs, files in os.walk(urdf_dir):
+        for f in files:
+            if f.endswith('.urdf'):
+                if 'torus' in f:
+                    f = 'torus.urdf'
+                urdf_files.append(os.path.join(path, f))
+    num_files = len(urdf_files)
+    num_extended_files = num_files + 3
+    extra_urdfs = ['cube.urdf', 'sphere.urdf', 'torus.urdf']
     urdf_files = np.random.choice(urdf_files, size=2, replace=False)
     # Get the names of the URDFs, which is the text after the last/ and before the .urdf
     moving_name = urdf_files[0].split('/')[-1].split('.')[0]
@@ -47,6 +57,16 @@ def write_npy(moving_name: str,
               contact_normal: np.array,
               contact_normal_force: np.array,
               contact_times: np.array,
+              lateral_friction_force1: np.array,
+              lateral_friction_force2: np.array,
+              lateral_friction_dir1: np.array,
+              lateral_friction_dir2: np.array,
+              moving_mass=None,
+              moving_inertia=None,
+              moving_friction=None,
+              static_mass=None,
+              static_inertia=None,
+              static_friction=None,
               log_dir=LOG_DIR
               ):
     '''
@@ -80,6 +100,16 @@ def write_npy(moving_name: str,
              contact_normal=contact_normal,
              contact_normal_force=contact_normal_force,
              contact_times=contact_times,
+             lateral_friction_force1=lateral_friction_force1,
+             lateral_friction_force2=lateral_friction_force2,
+             lateral_friction_dir1=lateral_friction_dir1,
+             lateral_friction_dir2=lateral_friction_dir2,
+             moving_mass=moving_mass,
+             moving_inertia=moving_inertia,
+             moving_friction=moving_friction,
+             static_mass=static_mass,
+             static_inertia=static_inertia,
+             static_friction=static_friction,
              allow_pickle=True)
 
 

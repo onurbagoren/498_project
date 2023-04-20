@@ -56,8 +56,12 @@ def run_single_simulation(num_frames):
     # Calculate direction and magnitude from object1 to object2
     direction = [pos2[0] - pos1[0], pos2[1] - pos1[1], pos2[2] - pos1[2]]
     distance = np.linalg.norm(direction)
-    normalizedDirection = [direction[0]/distance,
-                           direction[1]/distance, direction[2]/distance]
+    try:
+        normalizedDirection = [direction[0]/distance,
+                            direction[1]/distance, direction[2]/distance]
+    except ZeroDivisionError:
+        print("ZeroDivisionError")
+        return
     # Apply force to object1 in the direction of object2
     force = [forceMagnitude * normalizedDirection[0], forceMagnitude *
              normalizedDirection[1], forceMagnitude * normalizedDirection[2]]
@@ -66,6 +70,18 @@ def run_single_simulation(num_frames):
     # Run physics simulation at constant velocity
     ii = 0
     collided = False
+
+    # Get the mass of the moving object
+    mass = p.getDynamicsInfo(movingId, -1)[0]
+    # Get the inertia of the moving object
+    inertia = p.getDynamicsInfo(movingId, -1)[2]
+    # Get the friction of the moving object
+    friction = p.getDynamicsInfo(movingId, -1)[1]
+    # Get the restitution of the moving object
+
+    mass_static = p.getDynamicsInfo(staticId, -1)[0]
+    inertia_static = p.getDynamicsInfo(staticId, -1)[2]
+    friction_static = p.getDynamicsInfo(staticId, -1)[1]
 
     times = []
     moving_pos = []
@@ -81,6 +97,10 @@ def run_single_simulation(num_frames):
     contact_normal = []
     contact_force = []
     contact_times = []
+    lateral_friction_force1 = []
+    lateral_friction_force2 = []
+    lateral_friction_dir1 = []
+    lateral_friction_dir2 = []
     t = 0
     while True:
         p.stepSimulation()
@@ -110,21 +130,30 @@ def run_single_simulation(num_frames):
                     contact_points_static.append(contacts[ii][6])
                     contact_normal.append(contacts[ii][7])
                     contact_force.append(contacts[ii][9])
+                    lateral_friction_force1.append(contacts[ii][10])
+                    lateral_friction_force2.append(contacts[ii][12])
+                    lateral_friction_dir1.append(contacts[ii][11])
+                    lateral_friction_dir2.append(contacts[ii][13])
             else:
                 contact_times.append(t)
                 contact_points_moving.append(contacts[0][5])
                 contact_points_static.append(contacts[0][6])
                 contact_normal.append(contacts[0][7])
                 contact_force.append(contacts[0][9])
+                lateral_friction_force1.append(contacts[0][10])
+                lateral_friction_force2.append(contacts[0][12])
+                lateral_friction_dir1.append(contacts[0][11])
+                lateral_friction_dir2.append(contacts[0][13])
         if collided:
             ii += 1
             if ii == num_frames:
                 break
-        time.sleep(1.0/200.0)
+        # time.sleep(1./200.)
+        if t > 5.0:
+            return
 
     # Disconnect from PyBullet physics simulation
-    LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(
-        __file__)), 'logs', 'linear_collision')
+    LOG_DIR = os.path.join('/media/frog/DATA/Datasets/498_project', 'logs', 'linear_collision_ycb_extra_massinfo')
     # Save data
     write_npy(
         moving_name=moving_name,
@@ -143,13 +172,22 @@ def run_single_simulation(num_frames):
         contact_normal=contact_normal,
         contact_normal_force=contact_force,
         contact_times=np.array(contact_times),
+        lateral_friction_force1=np.array(lateral_friction_force1),
+        lateral_friction_force2=np.array(lateral_friction_force2),
+        lateral_friction_dir1=np.array(lateral_friction_dir1),
+        lateral_friction_dir2=np.array(lateral_friction_dir2),
+        moving_mass=mass,
+        moving_inertia=np.array(inertia),
+        moving_friction=friction,
+        static_mass=mass_static,
+        static_inertia=np.array(inertia_static),
+        static_friction=friction_static,
         log_dir=LOG_DIR
     )
     p.disconnect()
 
-
 def main():
-    for i in tqdm(range(int(2e4))):
+    for i in tqdm(range(int(2e5))):
         run_single_simulation(25)
 
 

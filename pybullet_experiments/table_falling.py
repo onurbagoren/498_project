@@ -18,7 +18,7 @@ table = p.loadURDF(f"{TABLE_DIR}/table/table.urdf", [0, 0, 0], useFixedBase=True
 OBJECTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets','objects')
 
 # Pick a random folder in the objects directory
-cube = p.loadURDF(f"{OBJECTS_DIR}/cube_lightweight/cube.urdf", [0, 0, 2], useFixedBase=False)
+cube = p.loadURDF(f"{OBJECTS_DIR}/cube/cube.urdf", [0, 0, 2], useFixedBase=False)
 
 while True:
     p.stepSimulation()

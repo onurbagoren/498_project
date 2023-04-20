@@ -1,3 +1,9 @@
 [submodule "pybullet-URDF-models"]
 	path = pybullet-URDF-models
 	url = git@github.com:ChenEating716/pybullet-URDF-models.git
+[submodule "bullet3"]
+	path = bullet3
+	url = git@github.com:bulletphysics/bullet3.git
+[submodule "torch-ngp"]
+	path = torch-ngp
+	url = git@github.com:onurbagoren/torch-ngp.git
