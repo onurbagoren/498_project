@@ -6,4 +6,4 @@
 	url = git@github.com:bulletphysics/bullet3.git
 [submodule "torch-ngp"]
 	path = torch-ngp
-	url = git@github.com:onurbagoren/torch-ngp.git
+	url = https://github.com/ashawkey/torch-ngp

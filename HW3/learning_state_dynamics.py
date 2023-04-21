@@ -16,7 +16,7 @@ OBSTACLE_HALFDIMS_TENSOR = torch.as_tensor(
     OBSTACLE_HALFDIMS, dtype=torch.float32)[:2]
 
 
-def collect_data_random(env, num_trajectories=1000, trajectory_length=10):
+def collect_data_random(env, nerf_manager, num_trajectories=1000, trajectory_length=10):
     """
     Collect data from the provided environment using uniformly random exploration.
     :param env: Gym Environment instance.
@@ -43,12 +43,25 @@ def collect_data_random(env, num_trajectories=1000, trajectory_length=10):
                       1, state_size), dtype=np.float32)
     actions = np.zeros((num_trajectories, trajectory_length,
                        action_size), dtype=np.float32)
+    
+    deltas_list = []
 
-    for traj_idx in range(num_trajectories):
+    for traj_idx in tqdm(range(num_trajectories)):
         states[traj_idx, 0, :] = env.reset()
-        for step_idx in range(trajectory_length):
-            action = env.action_space.sample()
-            next_state, _, _, _ = env.step(action)
+        for step_idx in tqdm(range(trajectory_length), leave=False):
+            tf_homogenous = nerf_manager.get_object_tf(env)
+            action_i = env.action_space.sample()
+            action_rand_xy, deltas, phi = nerf_manager.get_rand_action_xy_with_transform(tf_homogenous, env.lower_z * 2)
+            deltas_list.append(deltas.cpu().numpy())
+
+            action_i[0] = action_rand_xy[0]
+            action_i[1] = action_rand_xy[1]
+
+            action = np.zeros(3)
+            action[0] = phi
+            action[1] = action_i[2]
+            action[2] = action_i[3]
+            next_state, _, _, _ = env.step(action_i)
             states[traj_idx, step_idx+1, :] = next_state.astype(np.float32)
             actions[traj_idx, step_idx, :] = action.astype(np.float32)
         traj_data = {
@@ -56,8 +69,11 @@ def collect_data_random(env, num_trajectories=1000, trajectory_length=10):
             'actions': actions[traj_idx]
         }
         collected_data.append(traj_data)
+    # cat the deltas and average
+    deltas_list = np.array(deltas_list)
+    deltas_list = np.mean(deltas_list, axis=0)
     # ---
-    return collected_data
+    return collected_data, deltas_list
 
 
 def process_data_single_step(collected_data, batch_size=500):

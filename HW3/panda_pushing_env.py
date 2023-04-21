@@ -1,8 +1,7 @@
 import gym
 from gym import spaces
 
-import os
-import inspect
+import os, inspect
 
 import pybullet as p
 import pybullet_data as pd
@@ -10,7 +9,6 @@ import math
 import numpy as np
 from tqdm import tqdm
 import argparse
-import trimesh
 
 
 # get the path to assets
@@ -30,7 +28,7 @@ OBSTACLE_HALFDIMS = np.array([0.05, 0.25, 0.05])
 class PandaPushingEnv(gym.Env):
 
     def __init__(self, debug=False, visualizer=None, include_obstacle=False, render_non_push_motions=True,
-                 render_every_n_steps=1, camera_heigh=84, camera_width=84, obj_path="objects/cube/cube.obj", urdf_path="objects/cube/cube.urdf"):
+                 render_every_n_steps=1, camera_height=84, camera_width=84, obj_path="objects/cube/cube.obj", urdf_path="objects/cube/cube.urdf"):
         self.debug = debug
         self.visualizer = visualizer
         self.include_obstacle = include_obstacle
@@ -58,8 +56,7 @@ class PandaPushingEnv(gym.Env):
             assets_dir, "objects/cube/cube.urdf")
 
         # self.init_panda_joint_state = [-0.028, 0.853, -0.016, -1.547, 0.017, 2.4, 2.305, 0., 0.]
-        self.init_panda_joint_state = np.array(
-            [0., 0., 0., -np.pi * 0.5, 0., np.pi * 0.5, 0.])
+        self.init_panda_joint_state = np.array([0., 0., 0., -np.pi * 0.5, 0., np.pi * 0.5, 0.])
 
         self.object_start_pose = None
         self.object_target_pose = None
@@ -73,8 +70,7 @@ class PandaPushingEnv(gym.Env):
 
         # Robot always face that direction
         # self.fixed_orientation = p.getQuaternionFromEuler([0., -math.pi, math.pi / 2.]) # facing towards y
-        self.fixed_orientation = p.getQuaternionFromEuler(
-            [0., -math.pi, 0.])  # facing towards x
+        self.fixed_orientation = p.getQuaternionFromEuler([0., -math.pi, 0.])  # facing towards x
 
         self.delta_step_joint = 0.016
 
@@ -86,7 +82,7 @@ class PandaPushingEnv(gym.Env):
         # Render camera setting
         # self.camera_height = 84
         # self.camera_width = 84
-        self.camera_height = camera_heigh
+        self.camera_height = camera_height
         self.camera_width = camera_width
 
         p.resetDebugVisualizerCamera(cameraDistance=1.5, cameraYaw=0, cameraPitch=-40,
@@ -98,30 +94,14 @@ class PandaPushingEnv(gym.Env):
         self.lower_z = 0.02
         self.raise_z = 0.3
         # self.push_length = 0.02
-        self.push_length = 0.
+        self.push_length = 0.1
 
-        object_pointcloud = trimesh.load(self.obj_path).sample(int(1e5))
-        mean_z = np.mean(object_pointcloud[:, 2])
-        z_value = mean_z
-        z_tolerance = 0.005
-        z_min = z_value - z_tolerance
-        z_max = z_value + z_tolerance
-        z_mask = np.logical_and(
-            z_min <= object_pointcloud[:, 2], object_pointcloud[:, 2] <= z_max)
-        self.z_points = object_pointcloud[z_mask]
-
-        min_x = np.min(self.z_points[:, 0])
-        max_x = np.max(self.z_points[:, 0])
-        min_y = np.min(self.z_points[:, 1])
-        max_y = np.max(self.z_points[:, 1])
-
-        self.space_limits = [
-            np.array([0.05, -0.35]), np.array([.8, 0.35])]  # xy limits
+        self.space_limits = [np.array([0.05, -0.35]), np.array([.8, 0.35])]  # xy limits
         self.observation_space = spaces.Box(low=np.array([self.space_limits[0][0], self.space_limits[0][1], -np.pi]),
                                             high=np.array([self.space_limits[1][0], self.space_limits[1][0],
                                                            np.pi]))  # TODO: Get observation space -- maybe a tuple of (top_img, block_position)
-        self.action_space = spaces.Box(low=np.array([min_x + min_x / 2, min_y + min_y / 2, -np.pi * 0.5, 0]),
-                                       high=np.array([max_x + max_x / 2, max_y+ max_y/2 , np.pi * 0.5, 1]))  #
+        self.action_space = spaces.Box(low=np.array([-.2, -.2, -np.pi * 0.5, 0]),
+                                       high=np.array([.2, .2, np.pi * 0.5, 1]))  #
 
     def reset(self):
         self._set_object_positions()
@@ -131,40 +111,30 @@ class PandaPushingEnv(gym.Env):
         p.resetSimulation()
         p.setGravity(0, 0, -9.8)
 
-        # we will enable rendering after we loaded everything
-        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
+        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)  # we will enable rendering after we loaded everything
 
         # Add panda to the scene
-        self.pandaUid = p.loadURDF(os.path.join(
-            assets_dir, "franka_panda/panda.urdf"), useFixedBase=True)
+        self.pandaUid = p.loadURDF(os.path.join(assets_dir, "franka_panda/panda.urdf"), useFixedBase=True)
         for i in range(len(self.init_panda_joint_state)):
             p.resetJointState(self.pandaUid, i, self.init_panda_joint_state[i])
 
         # Load table
-        self.tableUid = p.loadURDF(os.path.join(
-            assets_dir, "objects/table/table.urdf"), basePosition=[0.5, 0, -0.65])
+        self.tableUid = p.loadURDF(os.path.join(assets_dir, "objects/table/table.urdf"), basePosition=[0.5, 0, -0.65])
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 
         # Load objects
-        self.objectUid = p.loadURDF(
-            self.object_file_path, basePosition=self.object_start_pose[:3], baseOrientation=self.object_start_pose[3:], globalScaling=1.)
+        self.objectUid = p.loadURDF(self.object_file_path, basePosition=self.object_start_pose[:3], baseOrientation=self.object_start_pose[3:], globalScaling=1.)
 
         # p.changeDynamics(self.objectUid, -1, 2)
-        self.targetUid = p.loadURDF(self.target_file_path, basePosition=self.object_target_pose[
-                                    :3], baseOrientation=self.object_target_pose[3:], globalScaling=1., useFixedBase=True)
+        self.targetUid = p.loadURDF(self.target_file_path, basePosition=self.object_target_pose[:3], baseOrientation=self.object_target_pose[3:], globalScaling=1., useFixedBase=True)
 
         if self.include_obstacle:
-            self.obstacleUid = p.loadURDF(
-                self.obstacle_file_path, basePosition=[.6, 0.2, 0], useFixedBase=True)
+            self.obstacleUid = p.loadURDF(self.obstacle_file_path, basePosition=[.6, 0.2, 0], useFixedBase=True)
 
-        # remove collisions with targeUid
-        p.setCollisionFilterGroupMask(self.targetUid, -1, 0, 0)
-        # remove collision between robot and target
-        p.setCollisionFilterPair(self.pandaUid, self.targetUid, -1, -1, 0)
+        p.setCollisionFilterGroupMask(self.targetUid, -1, 0, 0)  # remove collisions with targeUid
+        p.setCollisionFilterPair(self.pandaUid, self.targetUid, -1, -1, 0)  # remove collision between robot and target
 
-        # Change color for target
-        p.changeVisualShape(self.targetUid, -1,
-                            rgbaColor=[0.05, 0.95, 0.05, .1])
+        p.changeVisualShape(self.targetUid, -1, rgbaColor=[0.05, 0.95, 0.05, .1])  # Change color for target
 
         # get inital state after reset
         state = self.get_state()
@@ -174,26 +144,16 @@ class PandaPushingEnv(gym.Env):
         # check that the action is valid
         is_action_valid = self.check_action_valid(action)
         if not is_action_valid:
-            raise AttributeError(
-                f'Action {action} is not valid. Make sure you provide an action within the action space limits.')
+            raise AttributeError(f'Action {action} is not valid. Make sure you provide an action within the action space limits.')
         self.episode_step_counter += 1
         # Enable smooth motion of the robot arm
         p.configureDebugVisualizer(p.COV_ENABLE_SINGLE_STEP_RENDERING)
         # Convert the action values to the true ranges
-        push_loc_x, push_loc_y, push_angle, push_length_fraction = action[
-            0], action[1], action[2], action[3]
-        # we add some small 5% gap so we make sure we do not surpass the border
-
-        # From the points self.z_points, we select the point that is closest to the push location
-        # and use that point as the push location
-        distances = np.linalg.norm(
-            self.z_points[:, :2] - np.array([push_loc_x, push_loc_y]), axis=1)
-        closest_point_index = np.argmin(distances)
-        push_location = self.z_points[closest_point_index, :2]
-        # push_location = push_location_fraction * self.block_size * 0.5 * 0.95
+        push_location_x, push_location_y, push_angle, push_length_fraction = action[0], action[1], action[2], action[3]
+        #push_location = push_location_fraction * self.block_size * 0.5 * 0.95 # we add some small 5% gap so we make sure we do not surpass the border
         push_length = push_length_fraction * self.push_length
         # Perform the action
-        self.push(push_location, push_angle, push_length=push_length)
+        self.push([push_location_x, push_location_y], push_angle, push_length=push_length)
         state = self.get_state()
         reward = 0.
         done = self._is_done(state)
@@ -212,8 +172,7 @@ class PandaPushingEnv(gym.Env):
 
     def check_action_valid(self, action):
         # check that the action is within the action space limits.
-        is_action_valid = np.all((self.action_space.low <= action) & (
-            action <= self.action_space.high))
+        is_action_valid = np.all((self.action_space.low <= action) & (action <= self.action_space.high))
         is_action_valid = is_action_valid or self.action_space.contains(action)
         return is_action_valid
 
@@ -234,8 +193,7 @@ class PandaPushingEnv(gym.Env):
         if push_length is None:
             push_length = self.push_length
         current_pos = self.get_end_effector_pos()
-        target_pos = current_pos + push_length * \
-            np.array([np.cos(push_angle), np.sin(push_angle), 0])
+        target_pos = current_pos + push_length * np.array([np.cos(push_angle), np.sin(push_angle), 0])
         self._move_ee_trajectory(target_pos, step_size=step_size)
 
     def set_planar_xy(self, xy, theta=0., step_size=0.05):
@@ -245,29 +203,33 @@ class PandaPushingEnv(gym.Env):
 
     def push(self, push_location, push_angle, push_length=None):
         current_block_pose = self.get_object_pos_planar()
+
+        # change to get the object pose as a 6 dof
+        current_block_pose_6dof = self.get_object_pose()
+        pos = current_block_pose_6dof[:3]
+        quat = current_block_pose_6dof[3:]
+
         theta = current_block_pose[-1]
+        
         if not self.render_non_push_motions:
             self.is_render_on = False
         self.raise_up()
         start_gap = 0.1
-        # start_xy_bf = np.array([-start_gap, push_location])  # in block frame
-        print(push_location)
-        start_xy_bf = np.array([push_location[0], push_location[1]])  # in block frame
-        w_R_bf = np.array([[np.cos(theta), -np.sin(theta)],
-                          [np.sin(theta), np.cos(theta)]])
-        start_xy_wf = w_R_bf @ start_xy_bf + \
-            current_block_pose[:2]  # in world frame
-        print('start_xy_wf', start_xy_wf)
+        #start_xy_bf = np.array([-start_gap, push_location])  # in block frame
+        start_xy_bf = np.array([push_location[0], push_location[1]]) # in the block frames projection to an xy plane parallel to the table
+        w_R_bf = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+        start_xy_wf = w_R_bf @ start_xy_bf + current_block_pose[:2]  # in world frame
+
+        # get the theta from the start_xy_wf to the object cog
+        theta = np.arctan2(pos[1]- start_xy_wf[1], pos[0] - start_xy_wf[0])
         # set xy
         self.set_planar_xy(start_xy_wf, theta=theta)
         # set theta
         self.lower_down()
-        # push until barely touch the block
-        self.planar_push(theta, push_length=start_gap -
-                         0.015-.5*self.block_size, step_size=0.005)
+        #self.planar_push(theta, push_length=start_gap-0.015-.5*self.block_size, step_size=0.005) # push until barely touch the block
         self.is_render_on = True
-        self.planar_push(push_angle + theta,
-                         push_length=push_length, step_size=0.005)
+        # self.planar_push(push_angle + theta, push_length=push_length, step_size=0.005)
+        self.planar_push(theta, push_length=push_length, step_size=0.005)
 
     def _move_ee_trajectory(self, target_ee_pos, step_size=0.001):
         # interpolate and do ik along the trajectory to set the ee position in many places
@@ -302,8 +264,7 @@ class PandaPushingEnv(gym.Env):
 
             p.stepSimulation()
 
-            distance = np.linalg.norm(
-                target_ee_pos - self.get_end_effector_pos())
+            distance = np.linalg.norm(target_ee_pos - self.get_end_effector_pos())
             repeat_counter += 1
 
         if self.debug:
@@ -333,8 +294,7 @@ class PandaPushingEnv(gym.Env):
         """
         :return: The end effector X, Y, Z positions.
         """
-        effector_pos = np.asarray(p.getLinkState(
-            self.pandaUid, self.end_effector_idx)[0])
+        effector_pos = np.asarray(p.getLinkState(self.pandaUid, self.end_effector_idx)[0])
         return effector_pos
 
     def get_all_joint_pos(self):
@@ -379,8 +339,7 @@ class PandaPushingEnv(gym.Env):
                                                           upAxisIndex=2)
 
         proj_matrix = p.computeProjectionMatrixFOV(fov=60,
-                                                   aspect=float(
-                                                       camera_width) / camera_height,
+                                                   aspect=float(camera_width) / camera_height,
                                                    nearVal=nearVal,
                                                    farVal=100.0)
 
@@ -414,13 +373,11 @@ class PandaPushingEnv(gym.Env):
             object_target_pose_planar = TARGET_POSE_OBSTACLES
         else:
             # free of obstacles
-            # we assume this position for every starting pose
             object_start_pose_planar = np.array([0.4, 0., np.pi * 0.2])
             object_target_pose_planar = TARGET_POSE_FREE
         self.object_start_pose = self._planar_pose_to_world_pose(
             object_start_pose_planar)  # self.cube_pos_distribution.sample()
-        self.object_target_pose = self._planar_pose_to_world_pose(
-            object_target_pose_planar)
+        self.object_target_pose = self._planar_pose_to_world_pose(object_target_pose_planar)
 
     def _planar_pose_to_world_pose(self, planar_pose):
         theta = planar_pose[-1]
@@ -482,6 +439,9 @@ def quaternion_matrix(quaternion):
     ), dtype=np.float64)
 
 
+
+
+
 # DEBUG:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -489,8 +449,7 @@ if __name__ == '__main__':
     parser.add_argument('--obstacle', action='store_true')
     script_args, _ = parser.parse_known_args()
 
-    env = PandaPushingEnv(debug=script_args.debug,
-                          include_obstacle=script_args.obstacle)
+    env = PandaPushingEnv(debug=script_args.debug, include_obstacle=script_args.obstacle)
     env.reset()
 
     for i in tqdm(range(1000)):
