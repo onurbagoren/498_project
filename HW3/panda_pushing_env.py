@@ -19,8 +19,8 @@ assets_dir = os.path.join(hw_dir, 'assets')
 
 BOX_SIZE = 0.1
 
-TARGET_POSE_FREE = np.array([0.8, 0., 0.])
-TARGET_POSE_OBSTACLES = np.array([0.8, -0.1, 0.])
+TARGET_POSE_FREE = np.array([0.6, 0., 0.])
+TARGET_POSE_OBSTACLES = np.array([0.6, -0.1, 0.])
 OBSTACLE_CENTRE = np.array([0.6, 0.2, 0.])
 OBSTACLE_HALFDIMS = np.array([0.05, 0.25, 0.05])
 

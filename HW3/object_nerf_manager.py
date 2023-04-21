@@ -112,6 +112,26 @@ class ObjectNerfManager(object):
 
         return samples_obj[rand_point[0,0], rand_point[0,1]] / 2, deltas / 2, rand_phi
     
+    def get_phi_action_xy_with_transform(self, obj_transform, z_height, action, grid_len = 1, grid_res = 100):
+        phi = action[0]
+        contour, results_raw, samples_obj, samples_world, deltas = self.get_contour_with_transform(obj_transform, z_height, grid_len, grid_res)
+
+        # for each point on the contour, get the phi
+        contour_phis = np.arctan2(contour[:, :, 1] - (grid_res / 2), contour[:, :, 0] - (grid_res / 2))
+
+        # find the closest phi to the action phi
+        closest_phis = np.abs(contour_phis - phi)
+        closest_phis = closest_phis.reshape(-1)
+        closest_idx = np.argmin(closest_phis)
+
+        # select a random point on the contour
+        selected_point = contour[closest_idx]
+        # get its neighbor points for normal estimation
+        neighbor_1 = contour[closest_idx - 1 if closest_idx - 1 >= 0 else len(contour) - 1]
+        neighbor_2 = contour[0 if closest_idx + 1 >= len(contour) else closest_idx + 1]
+
+        return samples_obj[selected_point[0,0], selected_point[0,1]] / 2, deltas / 2
+    
     def get_object_tf(self, env):
         # get the object's pose
         object_pose = env.get_object_pose()
