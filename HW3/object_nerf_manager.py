@@ -14,7 +14,7 @@ import cv2 as cv
 from scipy.spatial.transform import Rotation as R
 
 class ObjectNerfManager(object):
-    def __init__(self, pth_checkpoint, device = "cuda:0", bound = 2) -> None:
+    def __init__(self, pth_checkpoint, device = "cuda:0", bound = 2, pose_offset = torch.eye(4)) -> None:
         self.model = NeRFNetwork(
             encoding="hashgrid",
             bound=bound,
@@ -31,6 +31,7 @@ class ObjectNerfManager(object):
         self.model.eval()
         self.device = device
         self.model = self.model.to(device)
+        self.pose_offset = pose_offset.to(device)
 
     def get_contour_with_transform(self, obj_transform, z_height, grid_len = 1, grid_res = 100):
         object_pos = obj_transform[:3, 3]
@@ -44,7 +45,7 @@ class ObjectNerfManager(object):
         # need to now transform those samples to the object's frame
         # make the samples homogenous
         samples_world = torch.cat([samples_world, torch.ones_like(samples_world[:, :1])], dim=-1)
-        samples_obj = torch.matmul(samples_world, obj_transform.to(self.device).T)
+        samples_obj = torch.matmul(samples_world, (self.pose_offset @ (obj_transform.to(self.device))).T)
         samples_obj = samples_obj[:, :3]
         samples_world = samples_world[:, :3]
 
@@ -91,8 +92,8 @@ class ObjectNerfManager(object):
         return largest_contour, results, samples_obj, samples_world, deltas
     
     def get_rand_action_xy_with_transform(self, obj_transform, z_height, grid_len = 1, grid_res = 100):
-        contour, results_raw, samples_obj, samples_world, deltas = self.get_contour_with_transform(obj_transform, z_height, grid_len, grid_res)
-
+        contour, results_raw, samples_obj, samples_world, deltas = self.get_contour_with_transform(obj_transform, z_height, grid_len, grid_res)# write the contour image to disk
+        cv.imwrite('contour.png', cv.drawContours(np.zeros_like(results_raw), contour, -1, (255, 255, 255), 3))
         # select a random phi from -pi to pi
         rand_phi = np.random.uniform(-np.pi, np.pi)
 
@@ -106,6 +107,10 @@ class ObjectNerfManager(object):
 
         # select a random point on the contour
         rand_point = contour[closest_idx]
+        # get the contour center, and expand by a fraction
+        contour_center = np.array([grid_res/2, grid_res/2])
+        delta_center = rand_point - contour_center
+        rand_point = (contour_center + delta_center * 1.01).astype(int)
         # get its neighbor points for normal estimation
         neighbor_1 = contour[closest_idx - 1 if closest_idx - 1 >= 0 else len(contour) - 1]
         neighbor_2 = contour[0 if closest_idx + 1 >= len(contour) else closest_idx + 1]
@@ -115,7 +120,8 @@ class ObjectNerfManager(object):
     def get_phi_action_xy_with_transform(self, obj_transform, z_height, action, grid_len = 1, grid_res = 100):
         phi = action[0]
         contour, results_raw, samples_obj, samples_world, deltas = self.get_contour_with_transform(obj_transform, z_height, grid_len, grid_res)
-
+        # write the contour image to disk
+        cv.imwrite('contour.png', cv.drawContours(np.zeros_like(results_raw), contour, -1, (255, 255, 255), 3))
         # for each point on the contour, get the phi
         contour_phis = np.arctan2(contour[:, :, 1] - (grid_res / 2), contour[:, :, 0] - (grid_res / 2))
 
@@ -126,11 +132,15 @@ class ObjectNerfManager(object):
 
         # select a random point on the contour
         selected_point = contour[closest_idx]
+        # get the contour center, and expand by a fraction
+        contour_center = np.array([grid_res/2, grid_res/2])
+        delta_center = selected_point - contour_center
+        selected_point = (contour_center + delta_center * 1.01).astype(int)
         # get its neighbor points for normal estimation
         neighbor_1 = contour[closest_idx - 1 if closest_idx - 1 >= 0 else len(contour) - 1]
         neighbor_2 = contour[0 if closest_idx + 1 >= len(contour) else closest_idx + 1]
 
-        return samples_obj[selected_point[0,0], selected_point[0,1]] / 2, deltas / 2
+        return (samples_obj[selected_point[0,0], selected_point[0,1]] / 2), deltas / 2
     
     def get_object_tf(self, env):
         # get the object's pose
